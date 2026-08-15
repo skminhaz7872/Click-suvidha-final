@@ -4,14 +4,14 @@ import { getFirestore } from 'firebase/firestore';
 import config from '../../firebase-applet-config.json';
 
 const firebaseConfig = {
-  apiKey: config.apiKey,
-  authDomain: config.authDomain,
-  projectId: config.projectId,
-  storageBucket: config.storageBucket,
-  messagingSenderId: config.messagingSenderId,
-  appId: config.appId
+  apiKey: "AIzaSyC3vTBzb6TPI9ZSGgQD1fkCc9OuGTyRLyM",
+  authDomain: "click-suvidha-5885f.firebaseapp.com",
+  projectId: "click-suvidha-5885f",
+  storageBucket: "click-suvidha-5885f.firebasestorage.app",
+  messagingSenderId: "776666219788",
+  appId: "1:776666219788:web:7ea007ebe96018286cb529"
 };
 
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-export const db = getFirestore(app, config.firestoreDatabaseId);
+export const db = getFirestore(app);
