@@ -56,18 +56,24 @@ export default function App() {
   const [userRole, setUserRole] = useState<string>('Admin');
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const role = localStorage.getItem('role') || 'Admin';
-    if (token) {
-      setIsAuthenticated(true);
-      setUserRole(role);
+    try {
+      const token = localStorage.getItem('token');
+      const role = localStorage.getItem('role') || 'Admin';
+      if (token) {
+        setIsAuthenticated(true);
+        setUserRole(role);
+      }
+    } catch (err) {
+      console.warn("localStorage is blocked or unavailable", err);
     }
   }, []);
 
   const handleLogin = (role: string) => {
     setIsAuthenticated(true);
     setUserRole(role);
-    localStorage.setItem('role', role);
+    try {
+      localStorage.setItem('role', role);
+    } catch(e) {}
   };
 
   return (

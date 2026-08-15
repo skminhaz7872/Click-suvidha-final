@@ -4,8 +4,28 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Click Suvidha Admin Panel</title>
+    <style>
+      #global-error { display: none; padding: 20px; color: red; font-family: sans-serif; background: #ffebee; min-height: 100vh; }
+    </style>
+    <script>
+      window.addEventListener('error', function(e) {
+        var el = document.getElementById('global-error');
+        if(el) {
+          el.style.display = 'block';
+          el.innerHTML = '<h2>Global Script Error</h2><pre>' + e.error + '\n' + e.message + '</pre>';
+        }
+      });
+      window.addEventListener('unhandledrejection', function(e) {
+        var el = document.getElementById('global-error');
+        if(el) {
+          el.style.display = 'block';
+          el.innerHTML = '<h2>Unhandled Promise Rejection</h2><pre>' + e.reason + '</pre>';
+        }
+      });
+    </script>
   </head>
   <body>
+    <div id="global-error"></div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
