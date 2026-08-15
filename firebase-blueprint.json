@@ -1,0 +1,60 @@
+{
+  "project_id": "silent-matrix-cf6jr",
+  "auth": {
+    "providers": ["email", "phone"]
+  },
+  "firestore": {
+    "collections": [
+      {
+        "name": "users",
+        "description": "Stores user profiles for both Admins and Members (Retailers, Distributors).",
+        "document_id": "auth_uid",
+        "fields": [
+          { "name": "role", "type": "string", "description": "User role: Admin, Retailer, Distributor, MasterDistributor" },
+          { "name": "fullName", "type": "string" },
+          { "name": "email", "type": "string" },
+          { "name": "mobileNumber", "type": "string" },
+          { "name": "status", "type": "string" },
+          { "name": "balance", "type": "number" },
+          { "name": "createdAt", "type": "timestamp" }
+        ],
+        "security_rules": [
+          { "action": "read", "allow": "auth != null" },
+          { "action": "write", "allow": "auth != null && resource.data.role == 'Admin'" }
+        ]
+      },
+      {
+        "name": "transactions",
+        "description": "Stores recharge and wallet history.",
+        "document_id": "auto",
+        "fields": [
+          { "name": "transactionId", "type": "string" },
+          { "name": "userId", "type": "reference", "description": "Reference to users collection" },
+          { "name": "type", "type": "string" },
+          { "name": "amount", "type": "number" },
+          { "name": "status", "type": "string" },
+          { "name": "description", "type": "string" },
+          { "name": "createdAt", "type": "timestamp" }
+        ],
+        "security_rules": [
+          { "action": "read", "allow": "auth != null && (resource.data.userId == auth.uid || get(/databases/$(database)/documents/users/$(auth.uid)).data.role == 'Admin')" },
+          { "action": "create", "allow": "auth != null" },
+          { "action": "update", "allow": "auth != null && get(/databases/$(database)/documents/users/$(auth.uid)).data.role == 'Admin'" },
+          { "action": "delete", "allow": "false" }
+        ]
+      },
+      {
+        "name": "settings",
+        "description": "App settings like banners, services, colors.",
+        "document_id": "auto",
+        "fields": [
+          { "name": "type", "type": "string", "description": "banner, service, general" }
+        ],
+        "security_rules": [
+          { "action": "read", "allow": "true" },
+          { "action": "write", "allow": "auth != null && get(/databases/$(database)/documents/users/$(auth.uid)).data.role == 'Admin'" }
+        ]
+      }
+    ]
+  }
+}
