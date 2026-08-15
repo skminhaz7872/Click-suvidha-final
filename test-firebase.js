@@ -1,8 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import 'firebase/auth';
 import { getAuth } from 'firebase/auth';
-import 'firebase/firestore';
-import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: "AIzaSyC3vTBzb6TPI9ZSGgQD1fkCc9OuGTyRLyM",
@@ -12,7 +9,6 @@ const firebaseConfig = {
   messagingSenderId: "776666219788",
   appId: "1:776666219788:web:7ea007ebe96018286cb529"
 };
-
-export const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+console.log('Auth initialized:', auth.name);

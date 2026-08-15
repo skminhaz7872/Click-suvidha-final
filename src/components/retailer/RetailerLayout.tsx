@@ -1,3 +1,4 @@
+import { safeStorage } from "@/src/utils/storage";
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Home, History, Wallet, User, LogOut } from 'lucide-react';
@@ -10,8 +11,8 @@ export default function RetailerLayout({ children }: { children: React.ReactNode
   const { balance } = useRetailer();
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
+    safeStorage.removeItem('token');
+    safeStorage.removeItem('role');
     window.location.href = '/login';
   };
 

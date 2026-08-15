@@ -1,3 +1,4 @@
+import { safeStorage } from "@/src/utils/storage";
 import { Menu, Search, Bell, User, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
@@ -7,7 +8,7 @@ export default function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   const { settings } = useTheme();
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    safeStorage.removeItem('token');
     window.location.href = '/login';
   };
 

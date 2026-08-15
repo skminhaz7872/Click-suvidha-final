@@ -1,3 +1,4 @@
+import { safeStorage } from "@/src/utils/storage";
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
@@ -57,14 +58,14 @@ export default function App() {
 
   useEffect(() => {
     try {
-      const token = localStorage.getItem('token');
-      const role = localStorage.getItem('role') || 'Admin';
+      const token = safeStorage.getItem('token');
+      const role = safeStorage.getItem('role') || 'Admin';
       if (token) {
         setIsAuthenticated(true);
         setUserRole(role);
       }
     } catch (err) {
-      console.warn("localStorage is blocked or unavailable", err);
+      console.warn("safeStorage is blocked or unavailable", err);
     }
   }, []);
 
@@ -72,7 +73,7 @@ export default function App() {
     setIsAuthenticated(true);
     setUserRole(role);
     try {
-      localStorage.setItem('role', role);
+      safeStorage.setItem('role', role);
     } catch(e) {}
   };
 

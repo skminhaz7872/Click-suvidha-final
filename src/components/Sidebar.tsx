@@ -1,3 +1,4 @@
+import { safeStorage } from "@/src/utils/storage";
 import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -20,7 +21,7 @@ export default function Sidebar({ isOpen = false, onClose }: { isOpen?: boolean,
   const { settings } = useTheme();
   
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    safeStorage.removeItem('token');
     window.location.href = '/login';
   };
 

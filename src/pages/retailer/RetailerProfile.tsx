@@ -1,10 +1,11 @@
+import { safeStorage } from "@/src/utils/storage";
 import React from 'react';
 import { User, Mail, Phone, MapPin, Shield, LogOut } from 'lucide-react';
 
 export default function RetailerProfile() {
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
+    safeStorage.removeItem('token');
+    safeStorage.removeItem('role');
     window.location.href = '/login';
   };
 

@@ -1,3 +1,4 @@
+import { safeStorage } from "@/src/utils/storage";
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
@@ -75,7 +76,7 @@ export default function Login({ onLogin }: LoginProps) {
         }
       }
       
-      localStorage.setItem('token', await user.getIdToken());
+      safeStorage.setItem('token', await user.getIdToken());
       onLogin(role as 'Admin' | 'Retailer');
       navigate(role === 'Retailer' ? '/retailer' : '/');
     } catch (err: any) {
@@ -96,7 +97,7 @@ export default function Login({ onLogin }: LoginProps) {
 
   const handleDevBypass = () => {
      // Quick bypass for the AI Studio preview environment if Firebase blocks domains
-     localStorage.setItem('token', 'dev-bypass-token');
+     safeStorage.setItem('token', 'dev-bypass-token');
      onLogin(loginRole);
      navigate(loginRole === 'Retailer' ? '/retailer' : '/');
   };
