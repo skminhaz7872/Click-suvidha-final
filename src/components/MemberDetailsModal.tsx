@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Calendar, Phone, Mail, User, Wallet, Activity, CreditCard } from 'lucide-react';
+import { X, Calendar, Phone, Mail, User, Wallet, Activity, CreditCard, Smartphone } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 
