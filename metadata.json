@@ -1,6 +1,6 @@
 {
-  "name": "",
-  "description": "",
+  "name": "Click Suvidha",
+  "description": "Multi-role recharge, wallet and member management portal for Click Suvidha admin and retailers.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

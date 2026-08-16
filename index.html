@@ -4,28 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Click Suvidha Admin Panel</title>
-    <style>
-      #global-error { display: none; padding: 20px; color: red; font-family: sans-serif; background: #ffebee; min-height: 100vh; }
-    </style>
-    <script>
-      window.addEventListener('error', function(e) {
-        var el = document.getElementById('global-error');
-        if(el) {
-          el.style.display = 'block';
-          el.innerHTML = '<h2>Global Script Error</h2><pre>' + e.error + '\n' + e.message + '</pre>';
-        }
-      });
-      window.addEventListener('unhandledrejection', function(e) {
-        var el = document.getElementById('global-error');
-        if(el) {
-          el.style.display = 'block';
-          el.innerHTML = '<h2>Unhandled Promise Rejection</h2><pre>' + e.reason + '</pre>';
-        }
-      });
-    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
-  <body>
-    <div id="global-error"></div>
+  <body class="bg-slate-50 text-slate-900 antialiased font-sans">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
