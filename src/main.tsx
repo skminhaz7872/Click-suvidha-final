@@ -1,17 +1,31 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import React, { ErrorInfo, ReactNode } from 'react';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 
-class ErrorBoundary extends React.Component<any, any> {
-  constructor(props: any) {
+interface ErrorBoundaryProps {
+  children: ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+  errorInfo: ErrorInfo | null;
+}
+
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
     super(props);
-    this.state = { hasError: false, error: null, errorInfo: null };
+    this.state = {
+      hasError: false,
+      error: null,
+      errorInfo: null
+    };
   }
 
-  static getDerivedStateFromError(error: Error) {
-    return { hasError: true, error };
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error, errorInfo: null };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
@@ -22,9 +36,9 @@ class ErrorBoundary extends React.Component<any, any> {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: '20px', color: 'red', fontFamily: 'sans-serif', background: '#fee', minHeight: '100vh' }}>
-          <h2>Application crashed.</h2>
-          <details style={{ whiteSpace: 'pre-wrap', background: '#fff', padding: '10px', border: '1px solid #fcc' }}>
+        <div className="p-5 text-red-700 bg-red-50 min-h-screen font-sans">
+          <h2 className="text-xl font-bold mb-2">Application error occurred.</h2>
+          <details className="whitespace-pre-wrap bg-white p-3 border border-red-200 rounded">
             {this.state.error && this.state.error.toString()}
             <br />
             {this.state.errorInfo?.componentStack}
