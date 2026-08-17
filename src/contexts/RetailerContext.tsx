@@ -3,6 +3,8 @@ import { db, auth } from '../lib/firebase';
 import { doc, collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
+import { safeStorage } from "@/src/utils/storage";
+
 export type RetailerTransaction = {
   id: string;
   date: string;
@@ -33,41 +35,51 @@ export const RetailerProvider = ({ children }: { children: React.ReactNode }) =>
     let unsubUser: (() => void) | undefined;
     let unsubTx: (() => void) | undefined;
 
-    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // Listen to user balance
-        unsubUser = onSnapshot(doc(db, 'users', user.uid), (docSnap) => {
-          if (docSnap.exists()) {
-            setBalance(docSnap.data().balance || 0);
-          }
-        });
+    const setupListeners = (uid: string) => {
+      // Listen to user balance
+      unsubUser = onSnapshot(doc(db, 'users', uid), (docSnap) => {
+        if (docSnap.exists()) {
+          setBalance(docSnap.data().balance || 0);
+        }
+      });
 
-        // Listen to user transactions
-        const q = query(
-          collection(db, 'transactions'),
-          where('userId', '==', user.uid),
-          // orderBy('createdAt', 'desc') // we might need index for this, let's omit orderBy or rely on client side sort for now
-        );
-        unsubTx = onSnapshot(q, (snapshot) => {
-          const txData: RetailerTransaction[] = [];
-          snapshot.forEach((doc) => {
-            const data = doc.data();
-            txData.push({
-              id: doc.id,
-              date: data.createdAt?.toDate ? data.createdAt.toDate().toLocaleString() : new Date().toLocaleString(),
-              type: data.type || 'Transaction',
-              number: data.description || '-',
-              operator: data.operator || '-',
-              amount: data.amount || 0,
-              status: data.status || 'Success',
-              ...data
-            });
+      // Listen to user transactions
+      const q = query(
+        collection(db, 'transactions'),
+        where('userId', '==', uid)
+      );
+      unsubTx = onSnapshot(q, (snapshot) => {
+        const txData: RetailerTransaction[] = [];
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          txData.push({
+            id: doc.id,
+            date: data.createdAt?.toDate ? data.createdAt.toDate().toLocaleString() : new Date().toLocaleString(),
+            type: data.type || 'Transaction',
+            number: data.description || '-',
+            operator: data.operator || '-',
+            amount: data.amount || 0,
+            status: data.status || 'Success',
+            ...data
           });
-          // sort descending by date locally since we didn't index
-          txData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-          setTransactions(txData);
         });
-      } else {
+        txData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        setTransactions(txData);
+      });
+    };
+
+    const storedUserId = safeStorage.getItem('user_id');
+    
+    // If we have a stored user id (meaning manual login), use it right away
+    if (storedUserId) {
+      setupListeners(storedUserId);
+    }
+
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      // If we don't have a stored user id, fallback to auth state (Google login)
+      if (user && !storedUserId) {
+        setupListeners(user.uid);
+      } else if (!user && !storedUserId) {
         setBalance(0);
         setTransactions([]);
         if (unsubUser) unsubUser();

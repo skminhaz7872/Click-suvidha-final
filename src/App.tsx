@@ -41,8 +41,12 @@ function AdminLayout({ children }: { children: React.ReactNode }) {
 
 function ProtectedRoute({ children, isAuthenticated, allowedRole, userRole }: { children: React.ReactNode, isAuthenticated: boolean, allowedRole: string, userRole: string }) {
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (userRole !== allowedRole) {
-    return <Navigate to={userRole === 'Retailer' ? '/retailer' : '/'} replace />;
+  
+  const isMemberRole = ['Retailer', 'Distributor', 'Master Distributor'].includes(userRole);
+  const isAllowed = allowedRole === 'Member' ? isMemberRole : userRole === allowedRole;
+
+  if (!isAllowed) {
+    return <Navigate to={isMemberRole ? '/retailer' : '/'} replace />;
   }
   
   if (allowedRole === 'Admin') {
@@ -59,7 +63,7 @@ export default function App() {
   useEffect(() => {
     try {
       const token = safeStorage.getItem('token');
-      const role = safeStorage.getItem('role') || 'Admin';
+      const role = safeStorage.getItem('user_role') || safeStorage.getItem('role') || 'Admin';
       if (token) {
         setIsAuthenticated(true);
         setUserRole(role);
@@ -73,13 +77,13 @@ export default function App() {
     setIsAuthenticated(true);
     setUserRole(role);
     try {
+      safeStorage.setItem('user_role', role);
       safeStorage.setItem('role', role);
     } catch(e) {}
   };
 
   return (
     <ThemeProvider>
-      <RetailerProvider>
       <BrowserRouter>
         <Routes>
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
@@ -96,17 +100,16 @@ export default function App() {
         <Route path="/notice" element={<ProtectedRoute isAuthenticated={isAuthenticated} allowedRole="Admin" userRole={userRole}><Placeholder title="Notice & Updates" /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute isAuthenticated={isAuthenticated} allowedRole="Admin" userRole={userRole}><Settings /></ProtectedRoute>} />
         
-        {/* Retailer Routes */}
-        <Route path="/retailer" element={<ProtectedRoute isAuthenticated={isAuthenticated} allowedRole="Retailer" userRole={userRole}><RetailerDashboard /></ProtectedRoute>} />
-        <Route path="/retailer/recharge/:type" element={<ProtectedRoute isAuthenticated={isAuthenticated} allowedRole="Retailer" userRole={userRole}><RechargePage /></ProtectedRoute>} />
-        <Route path="/retailer/history" element={<ProtectedRoute isAuthenticated={isAuthenticated} allowedRole="Retailer" userRole={userRole}><RetailerHistory /></ProtectedRoute>} />
-        <Route path="/retailer/profile" element={<ProtectedRoute isAuthenticated={isAuthenticated} allowedRole="Retailer" userRole={userRole}><RetailerProfile /></ProtectedRoute>} />
-        <Route path="/retailer/wallet" element={<ProtectedRoute isAuthenticated={isAuthenticated} allowedRole="Retailer" userRole={userRole}><RetailerWallet /></ProtectedRoute>} />
+        {/* Member Routes (Retailer, Distributor, Master Distributor) */}
+        <Route path="/retailer" element={<ProtectedRoute isAuthenticated={isAuthenticated} allowedRole="Member" userRole={userRole}><RetailerDashboard /></ProtectedRoute>} />
+        <Route path="/retailer/recharge/:type" element={<ProtectedRoute isAuthenticated={isAuthenticated} allowedRole="Member" userRole={userRole}><RechargePage /></ProtectedRoute>} />
+        <Route path="/retailer/history" element={<ProtectedRoute isAuthenticated={isAuthenticated} allowedRole="Member" userRole={userRole}><RetailerHistory /></ProtectedRoute>} />
+        <Route path="/retailer/profile" element={<ProtectedRoute isAuthenticated={isAuthenticated} allowedRole="Member" userRole={userRole}><RetailerProfile /></ProtectedRoute>} />
+        <Route path="/retailer/wallet" element={<ProtectedRoute isAuthenticated={isAuthenticated} allowedRole="Member" userRole={userRole}><RetailerWallet /></ProtectedRoute>} />
 
-        <Route path="*" element={<Navigate to={userRole === 'Retailer' ? '/retailer' : '/'} replace />} />
+        <Route path="*" element={<Navigate to={['Retailer', 'Distributor', 'Master Distributor'].includes(userRole) ? '/retailer' : '/'} replace />} />
       </Routes>
       </BrowserRouter>
-      </RetailerProvider>
     </ThemeProvider>
   );
 }

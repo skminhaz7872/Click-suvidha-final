@@ -22,8 +22,8 @@ export default function Login({ onLogin }: LoginProps) {
   const handleRoleChange = (role: 'Admin' | 'Retailer') => {
     setLoginRole(role);
     setError('');
-    setIdentifier(role === 'Admin' ? 'skminhaz7872@gmail.com' : '9876543210');
-    setPassword('password');
+    setIdentifier(role === 'Admin' ? 'skminhaz7872@gmail.com' : '');
+    setPassword('');
   };
 
   const handleFormLogin = async (e: React.FormEvent) => {
@@ -50,6 +50,7 @@ export default function Login({ onLogin }: LoginProps) {
       // Check in Firestore users collection
       try {
         let userDoc: any = null;
+        let userId = '';
         let role = loginRole;
 
         // Try query by mobile number
@@ -58,43 +59,39 @@ export default function Login({ onLogin }: LoginProps) {
         
         if (!snapMobile.empty) {
           userDoc = snapMobile.docs[0].data();
+          userId = snapMobile.docs[0].id;
         } else {
           // Try query by email
           const qEmail = query(collection(db, 'users'), where('email', '==', cleanIdentifier));
           const snapEmail = await getDocs(qEmail);
           if (!snapEmail.empty) {
             userDoc = snapEmail.docs[0].data();
+            userId = snapEmail.docs[0].id;
           }
         }
 
         if (userDoc) {
+          if (userDoc.password && userDoc.password !== cleanPassword) {
+            throw new Error('Invalid password. Please try again.');
+          }
           if (userDoc.status === 'Blocked') {
             throw new Error('Your account is blocked. Please contact admin.');
           }
-          role = (userDoc.role as 'Admin' | 'Retailer') || loginRole;
+          role = userDoc.role || loginRole;
           safeStorage.setItem('token', 'user-token-' + Date.now());
+          safeStorage.setItem('user_id', userId);
           safeStorage.setItem('user_role', role);
           safeStorage.setItem('user_email', userDoc.email || cleanIdentifier);
           safeStorage.setItem('user_name', userDoc.fullName || 'User');
           onLogin(role);
-          navigate(role === 'Retailer' ? '/retailer' : '/');
+          navigate(['Retailer', 'Distributor', 'Master Distributor'].includes(role) ? '/retailer' : '/');
           return;
         }
       } catch (dbErr: any) {
         console.warn('Firestore query fallback:', dbErr);
       }
 
-      // Fallback for Retailer login
-      if (loginRole === 'Retailer' && (cleanIdentifier === '9876543210' || cleanIdentifier.length === 10 || cleanIdentifier.includes('@'))) {
-        safeStorage.setItem('token', 'retailer-token-' + Date.now());
-        safeStorage.setItem('user_role', 'Retailer');
-        safeStorage.setItem('user_name', 'Retailer Member');
-        onLogin('Retailer');
-        navigate('/retailer');
-        return;
-      }
-
-      throw new Error('Invalid email, mobile number or credentials.');
+      throw new Error('Invalid email, mobile number or password.');
     } catch (err: any) {
       setError(err.message || 'Login failed. Please check your credentials.');
     } finally {
@@ -142,10 +139,11 @@ export default function Login({ onLogin }: LoginProps) {
       
       const token = await user.getIdToken().catch(() => 'google-token-' + Date.now());
       safeStorage.setItem('token', token);
+      safeStorage.setItem('user_id', user.uid);
       safeStorage.setItem('user_role', role);
       safeStorage.setItem('user_email', user.email || '');
       onLogin(role as 'Admin' | 'Retailer');
-      navigate(role === 'Retailer' ? '/retailer' : '/');
+      navigate(['Retailer', 'Distributor', 'Master Distributor'].includes(role) ? '/retailer' : '/');
     } catch (err: any) {
       console.error(err);
       if (err.code === 'auth/unauthorized-domain') {
@@ -158,13 +156,6 @@ export default function Login({ onLogin }: LoginProps) {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleDirectAccess = (role: 'Admin' | 'Retailer') => {
-    safeStorage.setItem('token', 'direct-token-' + Date.now());
-    safeStorage.setItem('user_role', role);
-    onLogin(role);
-    navigate(role === 'Retailer' ? '/retailer' : '/');
   };
 
   return (
@@ -195,7 +186,7 @@ export default function Login({ onLogin }: LoginProps) {
             onClick={() => handleRoleChange('Retailer')}
             className={`flex-1 py-2 text-sm font-semibold rounded-md transition-all ${loginRole === 'Retailer' ? 'bg-white shadow text-blue-600' : 'text-slate-600 hover:text-slate-900'}`}
           >
-            Retailer Login
+            Member Login
           </button>
         </div>
 
@@ -216,7 +207,7 @@ export default function Login({ onLogin }: LoginProps) {
               required
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
-              placeholder={loginRole === 'Retailer' ? 'Enter 10-digit mobile number' : 'skminhaz7872@gmail.com'}
+              placeholder={loginRole === 'Retailer' ? 'Enter mobile number or email' : 'skminhaz7872@gmail.com'}
               className="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
             />
           </div>
@@ -267,14 +258,6 @@ export default function Login({ onLogin }: LoginProps) {
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
               </svg>
               Sign in with Google
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleDirectAccess(loginRole)}
-              className="w-full py-2 px-4 border border-dashed border-slate-300 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-800 hover:border-slate-400 transition-colors"
-            >
-              1-Click Demo Login ({loginRole})
             </button>
           </div>
         </div>

@@ -10,7 +10,7 @@ export default function Members() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedMember, setSelectedMember] = useState<any>(null);
   const [formData, setFormData] = useState({
-    fullName: '', mobileNumber: '', email: '', username: '', role: 'Retailer', openingBalance: '0'
+    fullName: '', mobileNumber: '', email: '', username: '', role: 'Retailer', openingBalance: '0', password: ''
   });
   const [message, setMessage] = useState({ text: '', type: '' });
 
@@ -54,6 +54,7 @@ export default function Members() {
         email: formData.email,
         username: formData.username,
         role: formData.role,
+        password: formData.password,
         balance: parseFloat(formData.openingBalance) || 0,
         status: 'Active',
         createdAt: serverTimestamp()
@@ -61,7 +62,7 @@ export default function Members() {
       setMessage({ text: 'Member added successfully!', type: 'success' });
       setShowAddForm(false);
       fetchMembers();
-      setFormData({ fullName: '', mobileNumber: '', email: '', username: '', role: 'Retailer', openingBalance: '0' });
+      setFormData({ fullName: '', mobileNumber: '', email: '', username: '', role: 'Retailer', openingBalance: '0', password: '' });
     } catch (err: any) {
       console.error(err);
       setMessage({ text: err.message || 'Failed to add member', type: 'error' });
@@ -105,6 +106,10 @@ export default function Members() {
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Username</label>
               <input type="text" required className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
+              <input type="password" required className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Role</label>

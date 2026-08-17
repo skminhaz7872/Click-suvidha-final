@@ -3,15 +3,16 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Home, History, Wallet, User, LogOut } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useRetailer } from '../../contexts/RetailerContext';
+import { RetailerProvider, useRetailer } from '../../contexts/RetailerContext';
 import { cn } from '../../lib/utils';
 
-export default function RetailerLayout({ children }: { children: React.ReactNode }) {
+function RetailerLayoutInner({ children }: { children: React.ReactNode }) {
   const { settings } = useTheme();
   const { balance } = useRetailer();
 
   const handleLogout = () => {
     safeStorage.removeItem('token');
+    safeStorage.removeItem('user_id');
     safeStorage.removeItem('role');
     window.location.href = '/login';
   };
@@ -94,5 +95,13 @@ export default function RetailerLayout({ children }: { children: React.ReactNode
         </NavLink>
       </nav>
     </div>
+  );
+}
+
+export default function RetailerLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <RetailerProvider>
+      <RetailerLayoutInner>{children}</RetailerLayoutInner>
+    </RetailerProvider>
   );
 }

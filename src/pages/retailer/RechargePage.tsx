@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Smartphone, Tv, Zap, ArrowLeft, CheckCircle } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useRetailer } from '../../contexts/RetailerContext';
 import { db, auth } from '../../lib/firebase';
 import { doc, collection, runTransaction, serverTimestamp } from 'firebase/firestore';
+import { safeStorage } from '@/src/utils/storage';
 
 export default function RechargePage() {
   const { type } = useParams<{ type: string }>();
@@ -26,11 +27,25 @@ export default function RechargePage() {
   const config = typeConfig[type as keyof typeof typeConfig] || typeConfig.prepaid;
   const Icon = config.icon;
 
+  useEffect(() => {
+    if (type === 'prepaid' && number.length >= 2) {
+      if (/^(6|70|79)/.test(number)) setOperator('Jio');
+      else if (/^(99|98|97|96|89|73)/.test(number)) setOperator('Airtel');
+      else if (/^(91|95|81|88|87|79)/.test(number)) setOperator('Vi');
+      else if (/^(94|84)/.test(number)) setOperator('BSNL');
+    }
+  }, [number, type]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!number || !operator || !amount) return;
-    const user = auth.currentUser;
-    if (!user) return;
+    
+    const userId = auth.currentUser?.uid || safeStorage.getItem('user_id');
+    if (!userId) {
+      setStatus('error');
+      setMessage('User session expired. Please login again.');
+      return;
+    }
 
     setStatus('loading');
     
@@ -41,7 +56,7 @@ export default function RechargePage() {
       }
 
       await runTransaction(db, async (transaction) => {
-        const userRef = doc(db, 'users', user.uid);
+        const userRef = doc(db, 'users', userId);
         const userDoc = await transaction.get(userRef);
         
         if (!userDoc.exists()) {
@@ -60,7 +75,7 @@ export default function RechargePage() {
         const txRef = doc(collection(db, 'transactions'));
         transaction.set(txRef, {
           transactionId: 'TXN' + Date.now() + Math.floor(Math.random() * 1000),
-          userId: user.uid,
+          userId: userId,
           type: config.label,
           amount: chargeAmount,
           number: number,
